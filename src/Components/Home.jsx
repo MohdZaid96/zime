@@ -37,18 +37,12 @@ const Home = () => {
       setFilterData(res.data.posts)
       setFilterBody([...new Set(res.data.posts?.map((item) => {
         if(item.body != null)
-        return (
+          return (
           item.body
         )
         
       }))]);
-      setFilterReaction([...new Set(res.data.posts?.map((item) => {
-        if(item.reactions != null)
-        return (
-          item.reactions
-        )
-        
-      }))])
+      setFilterReaction([...new Set(res.data.posts?.map((item) => item.reactions))])
       console.log(filterReactions);
 
       //console.log(res.data.posts.length);
@@ -185,7 +179,7 @@ const Home = () => {
 
   return (
     <div>
-      
+      Home
       <Table
         dataSource={dataSource}
         columns={columns}
