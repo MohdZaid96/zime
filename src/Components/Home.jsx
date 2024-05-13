@@ -10,6 +10,12 @@ const getRandomuserParams = (params) => ({
 
 const Home = () => {
   const [dataSource, setDataSource] = useState([]);
+  const [filterData, setFilterData] = useState([]);
+  const [filterReactions, setFilterReaction] = useState([]);
+  const [filterBody, setFilterBody] = useState([]);
+  const [filterTitle, setFilterTitle] = useState([]);
+  const [filterUserId, setFilterUserId] = useState([]);
+  const [filterTags, setFiltertags] = useState([]);
   const [limit, setLimit] = useState(10);
   const [skip, setSkip] = useState(0);
   const [total, setTotal] = useState(null);
@@ -21,6 +27,35 @@ const Home = () => {
       pageSize: limit,
     },
   });
+
+  const handleFilterData=async () => {
+    try {
+      setLoading(true);
+      const res = await axios.get(
+        `https://dummyjson.com/posts?skip=0&limit=0`
+      );
+      setFilterData(res.data.posts)
+      setFilterBody([...new Set(res.data.posts?.map((item) => {
+        if(item.body != null)
+        return (
+          item.body
+        )
+        
+      }))]);
+      setFilterReaction([...new Set(res.data.posts?.map((item) => {
+        if(item.reactions != null)
+        return (
+          item.reactions
+        )
+        
+      }))])
+      console.log(filterReactions);
+
+      //console.log(res.data.posts.length);
+    } catch (error) {
+      console.error(error);
+    }
+  }
 
   const handleData = async () => {
     try {
@@ -41,12 +76,13 @@ const Home = () => {
         },
       });
 
-      console.log(res.data.posts);
+     // console.log(res.data.posts);
     } catch (error) {
       console.error(error);
     }
   };
   useEffect(() => {
+    handleFilterData();
     handleData();
   }, [tableParams.pagination?.current, tableParams.pagination?.pageSize]);
 
@@ -70,10 +106,8 @@ const Home = () => {
       filters: [...new Set(dataSource?.map((item) => item.id))],
       filterMode: "tree",
       filterSearch: true,
-      onFilter: (value, record) => {
-        console.log(record);
-        record.id.startsWith(value);
-      },
+      onFilter: (value, record) => record.id === value
+      ,
 
       sorter: (a, b) => a.id - b.id,
 
@@ -86,7 +120,7 @@ const Home = () => {
       filters: [...new Set(dataSource?.map((item) => item.title))],
       filterMode: "tree",
       filterSearch: true,
-      onFilter: (value, record) => record.title.startsWith(value),
+      onFilter: (value, record) => record.title === value,
 
       width: "20%",
     },
@@ -94,10 +128,10 @@ const Home = () => {
       title: "Body",
       dataIndex: "body",
       key: "body",
-      filters: [...new Set(dataSource?.map((item) => item.body))],
+      filters: [...new Set(filterBody)],
       filterMode: "tree",
       filterSearch: true,
-      onFilter: (value, record) => record.body.startsWith(value),
+      onFilter: (value, record) => record.body === value,
       width: "20%",
     },
 
@@ -113,13 +147,14 @@ const Home = () => {
       filters: [...new Set(dataSource?.map((item) => item.tags))],
       filterMode: "tree",
       filterSearch: true,
-      onFilter: (value, record) => record.tags.startsWith(value),
+      onFilter: (value, record) => record.tags === value,
       width: "20%",
 
       render: (_, { tags }) => (
         <>
           {tags?.map((tag) => {
             let color = tag.length > 5 ? "geekblue" : "green";
+
             return (
               <Tag color={color} key={tag}>
                 {tag.toUpperCase()}
@@ -133,8 +168,16 @@ const Home = () => {
       title: "Reactions",
       dataIndex: "reactions",
       key: "reactions",
-      filters: [...new Set(dataSource?.map((item) => item.reactions))],
-      onFilter: (value, record) => record.reactions.startsWith(value),
+      filters: filterReactions?.map((item) => item && ({
+        text: item,
+        value: item
+    }) 
+    
+    ),
+      filterMode: "tree",
+      filterSearch: true,
+      onFilter: (value, record) => 
+        record.reactions === value,
 
       sorter: (a, b) => a.reactions - b.reactions,
     },
@@ -142,7 +185,7 @@ const Home = () => {
 
   return (
     <div>
-      Home
+      
       <Table
         dataSource={dataSource}
         columns={columns}
