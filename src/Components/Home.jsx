@@ -179,7 +179,6 @@ const Home = () => {
 
   return (
     <div>
-      Home
       <Table
         dataSource={dataSource}
         columns={columns}
